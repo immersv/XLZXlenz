@@ -4,7 +4,7 @@ using System;
 using System.Text;
 using System.Security.Cryptography;
 using System.IO;
-//using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 using System.Net;
 using System.Linq;
 using System.Configuration;
@@ -26,7 +26,7 @@ public class CloudUploadTarget : MonoBehaviour
     private string access_key = "c14a587f5accc3deeb13ae244b59705545e4a436";
     private string secret_key = "85c97149c6894c1bb9ae8cae317774ff914731a6";
     private string url = @"https://vws.vuforia.com";//@"<a href="https://vws.vuforia.com";//">https://vws.vuforia.com";</a>
-    private string targetName = "anil7"; // must change when upload another Image Target, avoid same as exist Image on cloud
+    private string targetName = "anil17"; // must change when upload another Image Target, avoid same as exist Image on cloud
 
     private byte[] requestBytesArray;
 
@@ -101,12 +101,34 @@ public class CloudUploadTarget : MonoBehaviour
         if (request.error != null)
         {
             Debug.Log("request error: " + request.error+ request.text);
+           
+           
         }
         else
         {
             Debug.Log("request success");
             Debug.Log("returned data" + request.text);
-            similarTargets.CheckDuplicates();
+            CreateList(request.text);
+
         }
     }
+    public void CreateList(string jsonString)
+    {
+        if (jsonString != null)
+        {
+            Root root = new Root();
+            Newtonsoft.Json.JsonConvert.PopulateObject(jsonString, root);
+            Debug.Log(root.target_id);
+            similarTargets.CheckDuplicates(root.target_id);
+        }
+        
+
+    }
+}
+public class Root
+{
+    public string transaction_id { get; set; }
+    public string result_code { get; set; }
+    public string target_id { get; set; }
+
 }

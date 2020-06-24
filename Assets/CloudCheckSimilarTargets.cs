@@ -8,7 +8,8 @@ using UnityEngine.Networking;
 using System.Net;
 using System.Linq;
 using System.Configuration;
-
+using System.Collections.Generic;
+using Newtonsoft.Json;
 
 
 public class CloudCheckSimilarTargets : MonoBehaviour
@@ -21,12 +22,13 @@ public class CloudCheckSimilarTargets : MonoBehaviour
 
     public void Starts()
     {
-        CheckDuplicates();
+        //CheckDuplicates();
         Debug.Log("In Start");
     }
-    public string CheckDuplicates()
+   
+    public string CheckDuplicates(string tid)
     {
-        string targetID = "6be3323ccd214e1c81e45f3938d0c3b2";
+        string targetID = tid;
         string requestPath = "/duplicates/" + targetID;
         string serviceURI = url + requestPath;
         string httpAction = "GET";
@@ -67,8 +69,10 @@ public class CloudCheckSimilarTargets : MonoBehaviour
 
 
         unityWebRequest.SendWebRequest();
-        while (!unityWebRequest.isDone && !unityWebRequest.isNetworkError) { }
-        //If request error, return fail
+        while (!unityWebRequest.isDone && !unityWebRequest.isNetworkError)
+        {
+            //If request error, return fail            
+        }
         if (unityWebRequest.error != null)
         {
             Debug.Log("requestError: " + unityWebRequest.error);
@@ -81,8 +85,38 @@ public class CloudCheckSimilarTargets : MonoBehaviour
             {
                 return "Deleted";
             }
-           print(unityWebRequest.downloadHandler.text);
-            return unityWebRequest.downloadHandler.text;
+            Debug.Log(unityWebRequest.downloadHandler.text);
+
         }
+        Debug.Log(unityWebRequest.downloadHandler.text);
+        // CreateSimilarList(unityWebRequest.downloadHandler.text);
+        return unityWebRequest.downloadHandler.text;
+
+    }
+    public void CreateSimilarList(string jsonSimilar)
+    {
+        if (jsonSimilar!=null)
+        {
+            SRoot rootSimalar = new SRoot();
+            Newtonsoft.Json.JsonConvert.PopulateObject(jsonSimilar, rootSimalar);
+            Debug.Log(rootSimalar.similar_targets.Count);
+            if (rootSimalar.similar_targets.Count != null)
+            {
+                for(int i = 0; i < rootSimalar.similar_targets.Count; i++)
+                {
+                    Debug.Log(rootSimalar.similar_targets[i]);
+                }
+            }
+        }
+        
     }
 }
+
+public class SRoot
+{
+    public string transaction_id { get; set; }
+    public List<string> similar_targets { get; set; }
+    public string result_code { get; set; }
+
+}
+
